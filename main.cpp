@@ -242,66 +242,68 @@ void Main()
 		else {
 			if (restart) {
 				Rect{ 150,120, 180, 250 }(score_img).draw();
-				JSON onlinedata = JSON::Load(U"api.json");
-				if (onload == false) {
-					onload = true;
-					const HashTable<String, String> headers = { {U"Authorization", U"get" } };
-					const FilePath saveFilePath = U"api.json";
-					if (const auto response = SimpleHTTP::Get(U"https://siv3d.up.railway.app/api", headers, saveFilePath))
-					{
-
-						if (response.isOK())
+				if (network) {
+					JSON onlinedata = JSON::Load(U"api.json");
+					if (onload == false) {
+						onload = true;
+						const HashTable<String, String> headers = { {U"Authorization", U"get" } };
+						const FilePath saveFilePath = U"api.json";
+						if (const auto response = SimpleHTTP::Get(U"https://siv3d.up.railway.app/api", headers, saveFilePath))
 						{
-							onlinedata = JSON::Load(U"api.json");
-							network = true;
-						}
-					}
-					else
-					{
-						Print << U"Network error";
-						network = false;
-					}
 
-				}
-				font_30(onlinedata[U"score"].get<int32>()).drawAt(Vec2{ 240,305 }, Palette::Black);
-				font_15(onlinedata[U"body"].getString()).drawAt(Vec2{ 280,330 }, Palette::Black);
-				font_31(score).drawAt(Vec2{ 240,225 }, Palette::Black);
-				if (senddata == false) {
-					SimpleGUI::TextBox(player, Vec2{ 150, 400 });
-					if (SimpleGUI::Button(U"リザルトを投稿", Vec2{ 160, 450 })) {
-						senddata = true;
-						font_31(U"サーバーにデータを送信中").drawAt(Vec2{ 240, 320 }, Palette::Black);
-						const URL url = U"https://siv3d.up.railway.app/post";
-						//const URL url = U"http://localhost:443/post";
-						const HashTable<String, String> headers = { { U"Content-Type", U"application/json"}};
-						const std::string data = JSON
-						{
-							{ U"body", player.text},
-							{ U"score", score},
-							{ U"date", DateTime::Now().format() },
-						}.formatUTF8();
-						const FilePath saveFilePath = U"post_result.json";
-
-						if (auto response = SimpleHTTP::Post(url, headers, data.data(), data.size(), saveFilePath))
-						{/*
-							Console << U"------";
-							Console << response.getStatusLine().rtrimmed();
-							Console << U"status code: " << FromEnum(response.getStatusCode());
-							Console << U"------";
-							Console << response.getHeader().rtrimmed();
-							Console << U"------";
 							if (response.isOK())
 							{
-								Print << TextReader{ saveFilePath }.readAll();
-							}*/
-
+								onlinedata = JSON::Load(U"api.json");
+								network = true;
+							}
 						}
 						else
 						{
-							//Print << U"Failed.";
+							Print << U"Network error";
+							network = false;
+						}
+
+					}
+					font_30(onlinedata[U"score"].get<int32>()).drawAt(Vec2{ 240,305 }, Palette::Black);
+					font_15(onlinedata[U"body"].getString()).drawAt(Vec2{ 280,330 }, Palette::Black);
+					if (senddata == false) {
+						SimpleGUI::TextBox(player, Vec2{ 150, 400 });
+						if (SimpleGUI::Button(U"リザルトを投稿", Vec2{ 160, 450 })) {
+							senddata = true;
+							font_31(U"サーバーにデータを送信中").drawAt(Vec2{ 240, 320 }, Palette::Black);
+							const URL url = U"https://siv3d.up.railway.app/post";
+							//const URL url = U"http://localhost:443/post";
+							const HashTable<String, String> headers = { { U"Content-Type", U"application/json"} };
+							const std::string data = JSON
+							{
+								{ U"body", player.text},
+								{ U"score", score},
+								{ U"date", DateTime::Now().format() },
+							}.formatUTF8();
+							const FilePath saveFilePath = U"post_result.json";
+
+							if (auto response = SimpleHTTP::Post(url, headers, data.data(), data.size(), saveFilePath))
+							{/*
+								Console << U"------";
+								Console << response.getStatusLine().rtrimmed();
+								Console << U"status code: " << FromEnum(response.getStatusCode());
+								Console << U"------";
+								Console << response.getHeader().rtrimmed();
+								Console << U"------";
+								if (response.isOK())
+								{
+									Print << TextReader{ saveFilePath }.readAll();
+								}*/
+
+							}
+							else
+							{
+								//Print << U"Failed.";
+							}
 						}
 					}
 				}
+				font_31(score).drawAt(Vec2{ 240,225 }, Palette::Black);
 				if (SimpleGUI::Button(U"Back Home", Vec2{ 170, 500 })) {
 					restart = false;
 				}
